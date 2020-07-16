@@ -240,10 +240,11 @@ func (r *remoteAuthChallenger) tryEstablishChallenges(ctx context.Context) error
 // locally, or pulling it through from a remote and caching it locally if it doesn't
 // already exist
 type proxiedRepository struct {
-	blobStore distribution.BlobStore
-	manifests distribution.ManifestService
-	name      reference.Named
-	tags      distribution.TagService
+	blobStore  distribution.BlobStore
+	manifests  distribution.ManifestService
+	name       reference.Named
+	tags       distribution.TagService
+	signatures distribution.SignatureService
 }
 
 func (pr *proxiedRepository) Manifests(ctx context.Context, options ...distribution.ManifestServiceOption) (distribution.ManifestService, error) {
@@ -260,4 +261,8 @@ func (pr *proxiedRepository) Named() reference.Named {
 
 func (pr *proxiedRepository) Tags(ctx context.Context) distribution.TagService {
 	return pr.tags
+}
+
+func (pr *proxiedRepository) Signatures(ctx context.Context) distribution.SignatureService {
+	return pr.signatures
 }

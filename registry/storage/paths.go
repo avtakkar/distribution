@@ -30,6 +30,8 @@ const (
 // 						revisions
 //							-> <manifest digest path>
 //								-> link
+//								-> signatures
+//										-> <algorithm>/<hex digest>/link
 // 						tags/<tag>
 //							-> current/link
 // 							-> index
@@ -66,6 +68,7 @@ const (
 // support for name, tag lookups of manifests, using "current/link" under a
 // named tag directory. An index is maintained to support deletions of all
 // revisions of a given manifest tag.
+// TODO avtakkaar talk about signatures here
 //
 // We cover the path formats implemented by this path mapper below.
 //
@@ -74,6 +77,7 @@ const (
 // 	manifestRevisionsPathSpec:      <root>/v2/repositories/<name>/_manifests/revisions/
 // 	manifestRevisionPathSpec:      <root>/v2/repositories/<name>/_manifests/revisions/<algorithm>/<hex digest>/
 // 	manifestRevisionLinkPathSpec:  <root>/v2/repositories/<name>/_manifests/revisions/<algorithm>/<hex digest>/link
+// 	manifestRevisionLinkPathSpec:  <root>/v2/repositories/<name>/_manifests/revisions/<algorithm>/<hex digest>/signatures/<algorithm>/<hex digest>/link
 //
 //	Tags:
 //
@@ -141,6 +145,25 @@ func pathFor(spec pathSpec) (string, error) {
 		}
 
 		return path.Join(root, "link"), nil
+	case manifestSignaturesPathSpec:
+		revisionPrefix, err := pathFor(manifestRevisionPathSpec{name: v.name, revision: v.revision})
+		if err != nil {
+			return "", err
+		}
+
+		return path.Join(revisionPrefix, "signatures"), nil
+	case manifestSignatureLinkPathSpec:
+		revisionPrefix, err := pathFor(manifestRevisionPathSpec{name: v.name, revision: v.revision})
+		if err != nil {
+			return "", err
+		}
+
+		signatureSuffix, err := digestPathComponents(v.signature, false)
+		if err != nil {
+			return "", err
+		}
+
+		return path.Join(append(append([]string{revisionPrefix, "signatures"}, signatureSuffix...), "link")...), nil
 	case manifestTagsPathSpec:
 		return path.Join(append(repoPrefix, v.name, "_manifests", "tags")...), nil
 	case manifestTagPathSpec:
@@ -282,6 +305,27 @@ type manifestRevisionLinkPathSpec struct {
 }
 
 func (manifestRevisionLinkPathSpec) pathSpec() {}
+
+// manifestSignaturesPathSpec describes the directory path for
+// a manifest signature.
+type manifestSignaturesPathSpec struct {
+	name     string
+	revision digest.Digest
+}
+
+func (manifestSignaturesPathSpec) pathSpec() {}
+
+// manifestSignatureLinkPathSpec describes the path components required to look
+// up the data link for a signature of a manifest. If this file is not present,
+// the signature is not linked to the manifest. The contents of this file should
+// just be the digest.
+type manifestSignatureLinkPathSpec struct {
+	name      string
+	revision  digest.Digest
+	signature digest.Digest
+}
+
+func (manifestSignatureLinkPathSpec) pathSpec() {}
 
 // manifestTagsPathSpec describes the path elements required to point to the
 // manifest tags directory.

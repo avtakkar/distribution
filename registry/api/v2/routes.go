@@ -12,6 +12,8 @@ const (
 	RouteNameBlobUpload      = "blob-upload"
 	RouteNameBlobUploadChunk = "blob-upload-chunk"
 	RouteNameCatalog         = "catalog"
+	RouteNameSignature       = "signature"
+	RouteNameSignatures      = "signatures"
 )
 
 // Router builds a gorilla router with named routes for the various API

@@ -409,6 +409,62 @@ var routeDescriptors = []RouteDescriptor{
 		},
 	},
 	{
+		Name:        RouteNameSignatures,
+		Path:        "/v2/{name:" + reference.NameRegexp.String() + "}/manifests/{reference:" + digest.DigestRegexp.String() + "}/signatures/",
+		Entity:      "Signatures",
+		Description: "Retrieve information about signatures.",
+		Methods: []MethodDescriptor{
+			{
+				Method:      "GET",
+				Description: "Fetch the signatures for the manifest.",
+				Requests: []RequestDescriptor{
+					{
+						Name:        "Signatures",
+						Description: "Return all signatures for the manifest",
+						Headers: []ParameterDescriptor{
+							hostHeader,
+							authHeader,
+						},
+						PathParameters: []ParameterDescriptor{
+							nameParameterDescriptor,
+							referenceParameterDescriptor,
+						},
+						Successes: []ResponseDescriptor{
+							{
+								StatusCode:  http.StatusOK,
+								Description: "A list of signatures for the manifest.",
+								Headers: []ParameterDescriptor{
+									{
+										Name:        "Content-Length",
+										Type:        "integer",
+										Description: "Length of the JSON response body.",
+										Format:      "<length>",
+									},
+								},
+								Body: BodyDescriptor{
+									ContentType: "application/json",
+									Format:      `TODO avtakkar see spec`,
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	},
+	{
+		Name:        RouteNameSignature,
+		Path:        "/v2/{name:" + reference.NameRegexp.String() + "}/manifests/{reference:" + digest.DigestRegexp.String() + "}/signatures/{signature:" + digest.DigestRegexp.String() + "}",
+		Entity:      "Signature",
+		Description: "Manipulate a signature.",
+		Methods: []MethodDescriptor{
+			{
+				Method:      "PUT",
+				Description: "Link the signature to the manifest.",
+			},
+		},
+	},
+	{
 		Name:        RouteNameTags,
 		Path:        "/v2/{name:" + reference.NameRegexp.String() + "}/tags/list",
 		Entity:      "Tags",
