@@ -54,6 +54,10 @@ func getReference(ctx context.Context) (reference string) {
 	return dcontext.GetStringValue(ctx, "vars.reference")
 }
 
+func getSignature(ctx context.Context) (signature string) {
+	return dcontext.GetStringValue(ctx, "vars.signature")
+}
+
 var errDigestNotAvailable = fmt.Errorf("digest not available in context")
 
 func getDigest(ctx context.Context) (dgst digest.Digest, err error) {

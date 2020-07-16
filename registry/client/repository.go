@@ -359,6 +359,19 @@ func (t *tags) Untag(ctx context.Context, tag string) error {
 	panic("not implemented")
 }
 
+func (r *repository) Signatures(ctx context.Context) distribution.SignatureService {
+	return &ss{}
+}
+
+type ss struct{}
+
+func (s *ss) All(ctx context.Context, dgst digest.Digest) (d []digest.Digest, err error) {
+	return d, errors.New("not implemented")
+}
+func (s *ss) Link(ctx context.Context, mDgst digest.Digest, dgst digest.Digest) error {
+	return errors.New("not implemented")
+}
+
 type manifests struct {
 	name   reference.Named
 	ub     *v2.URLBuilder

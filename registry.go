@@ -111,6 +111,9 @@ type Repository interface {
 
 	// Tags returns a reference to this repositories tag service
 	Tags(ctx context.Context) TagService
+
+	// Signatures returns a reference to this repositories signature service.
+	Signatures(ctx context.Context) SignatureService
 }
 
 // TODO(stevvooe): Must add close methods to all these. May want to change the

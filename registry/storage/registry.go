@@ -211,6 +211,14 @@ func (repo *repository) Tags(ctx context.Context) distribution.TagService {
 	return tags
 }
 
+// Signatures returns an instance of SignatureService.
+func (repo *repository) Signatures(ctx context.Context) distribution.SignatureService {
+	return &signatureStore{
+		repository: repo,
+		blobStore:  repo.registry.blobStore,
+	}
+}
+
 // Manifests returns an instance of ManifestService. Instantiation is cheap and
 // may be context sensitive in the future. The instance should be used similar
 // to a request local.

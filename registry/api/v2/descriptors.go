@@ -26,6 +26,14 @@ var (
 		Description: `Tag or digest of the target manifest.`,
 	}
 
+	signatureParameterDescriptor = ParameterDescriptor{
+		Name:        "signature",
+		Type:        "string",
+		Format:      reference.DigestRegexp.String(),
+		Required:    true,
+		Description: `Digest of the target signature manifest.`,
+	}
+
 	uuidParameterDescriptor = ParameterDescriptor{
 		Name:        "uuid",
 		Type:        "opaque",
@@ -401,6 +409,113 @@ var routeDescriptors = []RouteDescriptor{
 								StatusCode:  http.StatusNotFound,
 							},
 							unauthorizedResponseDescriptor,
+							tooManyRequestsDescriptor,
+						},
+					},
+				},
+			},
+		},
+	},
+	{
+		Name:        RouteNameSignatures,
+		Path:        "/v2/{name:" + reference.NameRegexp.String() + "}/manifests/{reference:" + digest.DigestRegexp.String() + "}/signatures/",
+		Entity:      "Signatures",
+		Description: "Retrieve information about signatures.",
+		Methods: []MethodDescriptor{
+			{
+				Method:      "GET",
+				Description: "Fetch the signatures for the manifest.",
+				Requests: []RequestDescriptor{
+					{
+						Name:        "Signatures",
+						Description: "Return all signatures for the manifest",
+						Headers: []ParameterDescriptor{
+							hostHeader,
+							authHeader,
+						},
+						PathParameters: []ParameterDescriptor{
+							nameParameterDescriptor,
+							referenceParameterDescriptor,
+						},
+						Successes: []ResponseDescriptor{
+							{
+								StatusCode:  http.StatusOK,
+								Description: "A list of signatures for the manifest.",
+								Headers: []ParameterDescriptor{
+									{
+										Name:        "Content-Length",
+										Type:        "integer",
+										Description: "Length of the JSON response body.",
+										Format:      "<length>",
+									},
+								},
+								Body: BodyDescriptor{
+									ContentType: "application/json",
+									Format: `{
+    "digest": <manifest-digest>,
+    "signatures": [
+        <digest>,
+        ...
+    ]
+}`,
+								},
+							},
+						},
+						Failures: []ResponseDescriptor{
+							{
+								Description: "The reference was invalid.",
+								StatusCode:  http.StatusBadRequest,
+								ErrorCodes: []errcode.ErrorCode{
+									ErrorCodeDigestInvalid,
+								},
+								Body: BodyDescriptor{
+									ContentType: "application/json",
+									Format:      errorsBody,
+								},
+							},
+							unauthorizedResponseDescriptor,
+							repositoryNotFoundResponseDescriptor,
+							deniedResponseDescriptor,
+							tooManyRequestsDescriptor,
+						},
+					},
+				},
+			},
+		},
+	},
+	{
+		Name:        RouteNameLinkSignature,
+		Path:        "/v2/{name:" + reference.NameRegexp.String() + "}/manifests/{reference:" + digest.DigestRegexp.String() + "}/signatures/{signature:" + digest.DigestRegexp.String() + "}",
+		Entity:      "Signature",
+		Description: "Manipulate a signature.",
+		Methods: []MethodDescriptor{
+			{
+				Method:      "PUT",
+				Description: "Link the signature to the manifest. Manifest reference can only be a digest.",
+				Requests: []RequestDescriptor{
+					{
+						Name:        "LinkSignature",
+						Description: "Link the signature to the manifest.",
+						Headers: []ParameterDescriptor{
+							hostHeader,
+							authHeader,
+						},
+						PathParameters: []ParameterDescriptor{
+							nameParameterDescriptor,
+							referenceParameterDescriptor,
+							signatureParameterDescriptor,
+						},
+						Successes: []ResponseDescriptor{
+							{
+								StatusCode:  http.StatusOK,
+								Description: "Indicates that the signature was successfully linked to the manifest.",
+							},
+						},
+						Failures: []ResponseDescriptor{
+							unauthorizedResponseDescriptor,
+							repositoryNotFoundResponseDescriptor,
+							// TODO avtakkar add signature not found error
+							deniedResponseDescriptor,
 							tooManyRequestsDescriptor,
 						},
 					},
