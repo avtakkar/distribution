@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strings"
 
+	ociSpecsV2 "github.com/avtakkar/image-spec/specs-go/v2"
 	"github.com/docker/distribution"
 	dcontext "github.com/docker/distribution/context"
 	"github.com/docker/distribution/manifest/manifestlist"
@@ -321,7 +322,7 @@ func (imh *manifestHandler) PutManifest(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	isAnOCIManifest := mediaType == v1.MediaTypeImageManifest || mediaType == v1.MediaTypeImageIndex
+	isAnOCIManifest := mediaType == v1.MediaTypeImageManifest || mediaType == v1.MediaTypeImageIndex || mediaType == ociSpecsV2.MediaTypeImageIndex
 
 	if isAnOCIManifest {
 		dcontext.GetLogger(imh).Debug("Putting an OCI Manifest!")

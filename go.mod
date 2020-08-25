@@ -6,6 +6,7 @@ require (
 	github.com/Azure/azure-sdk-for-go v16.2.1+incompatible
 	github.com/Azure/go-autorest v10.8.1+incompatible // indirect
 	github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d
+	github.com/avtakkar/image-spec v1.0.2-0.20200827074048-fef1ffa0c177
 	github.com/aws/aws-sdk-go v1.15.11
 	github.com/bitly/go-simplejson v0.5.0 // indirect
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect

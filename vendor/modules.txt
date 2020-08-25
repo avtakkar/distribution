@@ -10,6 +10,8 @@ github.com/Azure/go-autorest/autorest/azure
 github.com/Azure/go-autorest/autorest/date
 # github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d
 github.com/Shopify/logrus-bugsnag
+# github.com/avtakkar/image-spec v1.0.2-0.20200827074048-fef1ffa0c177
+github.com/avtakkar/image-spec/specs-go/v2
 # github.com/aws/aws-sdk-go v1.15.11
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/awserr

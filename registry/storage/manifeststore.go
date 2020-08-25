@@ -5,13 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 
+	ociSpecsV2 "github.com/avtakkar/image-spec/specs-go/v2"
 	"github.com/docker/distribution"
 	dcontext "github.com/docker/distribution/context"
 	"github.com/docker/distribution/manifest"
 	"github.com/docker/distribution/manifest/manifestlist"
+	"github.com/docker/distribution/manifest/manifestlistwithconfig"
 	"github.com/docker/distribution/manifest/ocischema"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/docker/distribution/registry/storage/driver"
 	"github.com/opencontainers/go-digest"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
@@ -42,16 +45,18 @@ func (o skipLayerOption) Apply(m distribution.ManifestService) error {
 }
 
 type manifestStore struct {
-	repository *repository
-	blobStore  *linkedBlobStore
-	ctx        context.Context
+	repository                *repository
+	blobStore                 *linkedBlobStore
+	ctx                       context.Context
+	referrerMetadataStoreFunc func(manifestDigest digest.Digest, metadataMediaType string) *linkedBlobStore
 
 	skipDependencyVerification bool
 
-	schema1Handler      ManifestHandler
-	schema2Handler      ManifestHandler
-	ocischemaHandler    ManifestHandler
-	manifestListHandler ManifestHandler
+	schema1Handler                ManifestHandler
+	schema2Handler                ManifestHandler
+	ocischemaHandler              ManifestHandler
+	manifestListHandler           ManifestHandler
+	manifestListWithConfigHandler ManifestHandler
 }
 
 var _ distribution.ManifestService = &manifestStore{}
@@ -106,6 +111,8 @@ func (ms *manifestStore) Get(ctx context.Context, dgst digest.Digest, options ..
 			return ms.ocischemaHandler.Unmarshal(ctx, dgst, content)
 		case manifestlist.MediaTypeManifestList, v1.MediaTypeImageIndex:
 			return ms.manifestListHandler.Unmarshal(ctx, dgst, content)
+		case ociSpecsV2.MediaTypeImageIndex:
+			return ms.manifestListWithConfigHandler.Unmarshal(ctx, dgst, content)
 		case "":
 			// OCI image or image index - no media type in the content
 
@@ -138,9 +145,32 @@ func (ms *manifestStore) Put(ctx context.Context, manifest distribution.Manifest
 		return ms.ocischemaHandler.Put(ctx, manifest, ms.skipDependencyVerification)
 	case *manifestlist.DeserializedManifestList:
 		return ms.manifestListHandler.Put(ctx, manifest, ms.skipDependencyVerification)
+	case *manifestlistwithconfig.DeserializedManifestListWithConfig:
+		return ms.manifestListWithConfigHandler.Put(ctx, manifest, ms.skipDependencyVerification)
 	}
 
 	return "", fmt.Errorf("unrecognized manifest type %T", manifest)
+}
+
+// ReferrerMetadata returns all manifest referrer metadata of given mediaType.
+func (ms *manifestStore) ReferrerMetadata(ctx context.Context, dgst digest.Digest, mediaType string) ([]digest.Digest, error) {
+	dcontext.GetLogger(ms.ctx).Debug("(*manifestStore).ReferrerMetadata")
+
+	referrerMetadataStore := ms.referrerMetadataStoreFunc(dgst, mediaType)
+
+	var metadataDgsts []digest.Digest
+
+	err := referrerMetadataStore.Enumerate(ctx, func(metadataDgst digest.Digest) error {
+		metadataDgsts = append(metadataDgsts, metadataDgst)
+		return nil
+	})
+
+	switch err.(type) {
+	case driver.PathNotFoundError:
+		return metadataDgsts, nil
+	}
+
+	return metadataDgsts, err
 }
 
 // Delete removes the revision of the specified manifest.

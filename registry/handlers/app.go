@@ -105,6 +105,7 @@ func NewApp(ctx context.Context, config *configuration.Configuration) *App {
 		return http.HandlerFunc(apiBase)
 	})
 	app.register(v2.RouteNameManifest, manifestDispatcher)
+	app.register(v2.RouteNameManifestReferrerMetadata, manifestReferrerMetadataDispatcher)
 	app.register(v2.RouteNameCatalog, catalogDispatcher)
 	app.register(v2.RouteNameTags, tagsDispatcher)
 	app.register(v2.RouteNameBlob, blobDispatcher)

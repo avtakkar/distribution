@@ -61,6 +61,9 @@ type ManifestService interface {
 	// Delete removes the manifest specified by the given digest. Deleting
 	// a manifest that doesn't exist will return ErrManifestNotFound
 	Delete(ctx context.Context, dgst digest.Digest) error
+
+	// ReferrerMetadata returns the digests of metadata objects by mediaType.
+	ReferrerMetadata(ctx context.Context, dgst digest.Digest, mediaType string) ([]digest.Digest, error)
 }
 
 // ManifestEnumerator enables iterating over manifests

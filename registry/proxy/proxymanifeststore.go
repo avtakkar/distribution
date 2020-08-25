@@ -2,6 +2,7 @@ package proxy
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/docker/distribution"
@@ -24,6 +25,10 @@ type proxyManifestStore struct {
 }
 
 var _ distribution.ManifestService = &proxyManifestStore{}
+
+func (pms proxyManifestStore) ReferrerMetadata(ctx context.Context, dgst digest.Digest, mediaType string) ([]digest.Digest, error) {
+	return nil, fmt.Errorf("not implemented")
+}
 
 func (pms proxyManifestStore) Exists(ctx context.Context, dgst digest.Digest) (bool, error) {
 	exists, err := pms.localManifests.Exists(ctx, dgst)

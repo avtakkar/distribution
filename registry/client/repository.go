@@ -366,6 +366,10 @@ type manifests struct {
 	etags  map[string]string
 }
 
+func (ms *manifests) ReferrerMetadata(ctx context.Context, dgst digest.Digest, mediaType string) ([]digest.Digest, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
 func (ms *manifests) Exists(ctx context.Context, dgst digest.Digest) (bool, error) {
 	ref, err := reference.WithDigest(ms.name, dgst)
 	if err != nil {
